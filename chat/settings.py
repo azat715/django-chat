@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 
+from os import environ
+
+env = environ
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -71,6 +75,17 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "chat.wsgi.application"
 ASGI_APPLICATION = "chat.asgi.application"
+
+REDIS_HOST = env.get("REDIS_HOST")
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [(REDIS_HOST, 6379)],
+        },
+    },
+}
 
 
 # Database

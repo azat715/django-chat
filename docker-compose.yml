@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  web:
+    build: .
+    environment:
+      REDIS_HOST: redis
+    volumes:
+      - data:/code/db
+    ports:
+      - "8001:8000"
+
+  redis:
+    image: "redis:latest"
+    ports: 
+      - "6379:6379"
+
+
+volumes: 
+  data:
