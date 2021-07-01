@@ -1,0 +1,24 @@
+{% extends "./base.html" %}
+{% block content %}
+<form method="post" class="w-25">
+	{% csrf_token %}
+	<div class="mb-3">
+		<label for="id_username">Логин</label>
+		<input class="form-control" type="text" name="username" id="id_username" required>
+	</div>
+	<div class="class mb-3">
+		<label for="id_password">Пароль</label>
+		<input class="form-control" type="password" name="password" id="id_password">
+	</div>
+	{% if form.non_field_errors %}
+	<div class="alert alert-danger" role="alert">
+		{% for error in form.non_field_errors %}
+		<p>{{ error }}</p>
+		{% endfor %}
+	</div>
+	{% endif %}
+	<input class="btn btn-primary btn-sm" type="submit" value="Войти">
+</form>
+
+
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "./base.html" %}
+{% block content %}
+
+
+<!--Register-->
+<h4>Регистрация</h4>
+
+{{ form.non_field_errors }}
+<form method="post" class="w-25">
+    {% csrf_token %}
+    <div class="mb-3">
+        {% for error in form.username.errors %}
+        <label>{{ error|escape }} </label>
+        {% endfor %}
+        <label for="id_username">Логин</label>
+        <input class="form-control" type="text" name="username" id="id_username" required>
+    </div>
+    <div class="class mb-3">
+        {% for error in form.email.errors %}
+        <label>{{ error|escape }} </label>
+        {% endfor %}
+        <label for="id_email">Email</label>
+        <input class="form-control" type="email" name="email" id="id_email">
+    </div>
+    <div class="class mb-3">
+        {% for error in form.password1.errors %}
+        <label>{{ error|escape }} </label>
+        {% endfor %}
+        <label for="id_password1">Пароль</label>
+        <input class="form-control" type="password" name="password1" id="id_password1">
+    </div>
+    <div class="class mb-3">
+        {% for error in form.password2.errors %}
+        <label>{{ error|escape }} </label>
+        {% endfor %}
+        <label for="id_password2">Повторите пароль</label>
+        <input class="form-control" type="password" name="password2" id="id_password2">
+    </div>
+    <input class="btn btn-primary btn-sm" type="submit" value="Регистрация">
+</form>
+<p class="text-center">Если у васть есть аккаунт, <a href="/login">Войдите</a></p>
+
+{% endblock %}
