@@ -256,7 +256,7 @@
     "pk": 1,
     "fields": {
         "password": "pbkdf2_sha256$260000$gJqYdLSXRtv4t7ZTkizAKW$y1XVT5po3RvuLgwzMVelDGHU4UhcyZ6d7vhziLvjZ1g=",
-        "last_login": null,
+        "last_login": "2021-07-05T19:03:27.330Z",
         "is_superuser": false,
         "username": "test_user",
         "first_name": "",
@@ -323,6 +323,41 @@
     "fields": {
         "app_label": "core",
         "model": "message"
+    }
+},
+{
+    "model": "sessions.session",
+    "pk": "km4l1zydv8pmzz4jl9yv9z7ajpmgw2en",
+    "fields": {
+        "session_data": ".eJxVjMEOwiAQRP-FsyFlLVA8evcbyLK7SNXQpLQn47_bJj3obTLvzbxVxHUpcW0yx5HVRRl1-u0S0lPqDviB9T5pmuoyj0nvij5o07eJ5XU93L-Dgq1sayt9ABCkwaEnJumsGLICJrvMW7IByCeG_txZH7y4AEZMxpRh8GzV5wv3-Dg7:1m0TsN:MweSTRzqHal7rozYNrGJV2FXEZR-eXvPK1c0cEQPSY0",
+        "expire_date": "2021-07-19T19:03:27.342Z"
+    }
+},
+{
+    "model": "core.message",
+    "pk": 1,
+    "fields": {
+        "author": 1,
+        "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "timestamp": "2021-07-05T19:04:07.506Z"
+    }
+},
+{
+    "model": "core.message",
+    "pk": 2,
+    "fields": {
+        "author": 1,
+        "text": "sed do eiusmod tempor incididunt ut labore et ",
+        "timestamp": "2021-07-05T19:04:14.814Z"
+    }
+},
+{
+    "model": "core.message",
+    "pk": 3,
+    "fields": {
+        "author": 1,
+        "text": "dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation",
+        "timestamp": "2021-07-05T19:04:26.656Z"
     }
 }
 ]

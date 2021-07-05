@@ -1,11 +1,18 @@
 {% extends "./base.html" %}
+
+{% block navbar %}
+<li class="nav-item"><a href="{% url 'core:logout' %}">Выход</a>
+{% endblock %}
+
 {% block content %}
-    <div class="form-group">
-    <textarea class="form-control" id="chat-log" cols="100" rows="20" readonly></textarea><br>
+    <div class="w-50">
+    <div class="list-group" id="chat-res"></div>
     <input class="form-control" id="chat-message-input" type="text" size="100"><br>
     <input class="btn btn-primary" id="chat-message-submit" type="button" value="Send">
-    <input id="chat-message-prev" type="button" value="Prev">
-    {{ room_name|json_script:"room-name" }}
-     </div>
- 
+    </div>
+{% endblock %}
+
+{% block javascript %}
+{% load static %}
+<script src="{% static 'js/plugins.js' %}"></script>
 {% endblock %}
