@@ -10,6 +10,7 @@ python = "^3.8"
 Django = "^3.2.4"
 channels = "^3.0.3"
 channels-redis = "^3.2.0"
+pylint = "^2.9.3"
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"

@@ -22,155 +22,53 @@
 }());
 
 
-function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i].trim();
-      if (cookie.substring(0, name.length + 1) === (name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
+const roomName = JSON.parse(document.getElementById('room-name').textContent);
+
+const chatSocket = new WebSocket(
+  'ws://'
+  + window.location.host
+  + '/ws/chat/'
+  + roomName
+  + '/'
+);
+
+chatSocket.onmessage = function (e) {
+  const data = JSON.parse(e.data);
+  console.log(data)
+  if (Array.isArray(data["message"])) {
+    console.log("Array")
+    data["message"].forEach((item) => {
+      console.log(item)
+      document.querySelector('#chat-log').value += (item + '\n');
+    })
+  } else {
+    console.log("not Array")
+    document.querySelector('#chat-log').value += (data.message + '\n');
   }
-  return cookieValue;
-}
+};
 
-const resModal = new bootstrap.Modal(document.getElementById('Result'), {
-  keyboard: false
-})
+chatSocket.onclose = function (e) {
+  console.error('Chat socket closed unexpectedly');
+};
 
-
-function quizzes() {
-  return {
-    csrftoken: getCookie('csrftoken'),
-    tab: "all",
-    quizzes: [],
-    fetchQuizzes(url) {
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          this.quizzes = data;
-        });
-    },
-    startQuiz: function (quizz) {
-      fetch("/api/quizzes/started", {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-          'X-CSRFToken': this.csrftoken
-        },
-        body: JSON.stringify({ "uuid": quizz.uuid })
-      }).then(response => response.json())
-        .then(() => {
-          location.href = `quizz/${quizz.slug}`
-        })
-        .catch((error) => {
-          console.log('Request failed', error);
-        });
-    },
+document.querySelector('#chat-message-input').focus();
+document.querySelector('#chat-message-input').onkeyup = function (e) {
+  if (e.keyCode === 13) {  // enter, return
+    document.querySelector('#chat-message-submit').click();
   }
-}
+};
 
-function question(base) {
-  return {
-    modal: resModal,
-    baseURL: base,
-    questionURL: base + '/question',
-    scoreURL: base + '/score',
-    questionPrevURL: base + '/question' + '/prev',
-    csrftoken: getCookie('csrftoken'),
-    choices: [],
-    text: "",
-    question_uuid: "",
-    res: "",
-    prev: false,
-    button_prev: true,
-    fetchQuestion() {
-      fetch(this.questionURL)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status == "the questions are over") {
-            return Promise.reject();
-          }
-          else {
-            return data
-          }
-        })
-        .then(data => {
-          this.choices = data.choices;
-          this.text = data.text
-          this.question_uuid = data.uuid
-        })
-        .catch(() => {
-          this.get_score()
-        });
-    },
-    send() {
-      form = document.getElementById("form");
-      formData = new FormData(form);
-      if (formData.getAll("choice").length == 0) {
-        return false
-      }
-      let data = {
-        "question_uuid": this.question_uuid,
-        "choices": formData.getAll("choice")
-      }
-      if (!this.prev) {
-        fetch(this.questionURL, {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': this.csrftoken
-          },
-          body: JSON.stringify(data)
-        }).then(response => response.json())
-          .then(() => {
-            this.fetchQuestion(this.questionURL);
-          })
-          .catch((error) => {
-            console.log('Request failed', error);
-          });
-      } else {
-        fetch(this.questionURL, {
-          method: 'PATCH',
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': this.csrftoken
-          },
-          body: JSON.stringify(data)
-        }).then(() => {
-          this.fetchQuestion(this.questionURL);
-        })
-          .catch((error) => {
-            console.log('Request failed', error);
-          });
-        this.prev = false
-        this.questionURL = this.baseURL + '/question'
-      }
-      this.button_prev = false
-    },
-    get_score() {
-      fetch(this.scoreURL)
-        .then(response => response.json())
-        .then(data => {
-          this.res = data.score;
-          this.modal.show();
-        });
-    },
-    get_prev(event) {
-      event.disable
-      this.questionURL = this.questionPrevURL
-      this.prev = true
-      this.button_prev = true
-      this.fetchQuestion()
-    }
-  }
-}
+document.querySelector('#chat-message-submit').onclick = function (e) {
+  const messageInputDom = document.querySelector('#chat-message-input');
+  const message = messageInputDom.value;
+  chatSocket.send(JSON.stringify({
+    'message': message
+  }));
+  messageInputDom.value = '';
+};
+
+document.querySelector('#chat-message-prev').onclick = function (e) {
+  chatSocket.send(JSON.stringify({
+    'command': 'old_messages'
+  }));
+};
