@@ -1,7 +1,6 @@
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from django.core.checks import messages
 from datetime import datetime
 from core.models import Message
 
@@ -27,30 +26,35 @@ class ChatConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         if text_data_json.get("message"):
             message = text_data_json["message"]
-            message = (
-                username
-                + " "
-                + datetime.now().strftime("%Y-%m-%d %H:%M")
-                + ":\n"
-                + message
-            )
+            send_message = {
+                "username": username,
+                "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "message": message,
+            }
 
             async_to_sync(self.channel_layer.group_send)(
-                self.room_group_name, {"type": "chat_message", "message": message}
+                self.room_group_name, {"type": "chat_message", "message": send_message}
             )
             Message.objects.create(
-                text=text_data_json["message"], author=self.scope["user"]
+                text=send_message["message"],
+                author=self.scope["user"],
+                timestamp=send_message["date"],
             )
         elif text_data_json.get("command"):
             command = text_data_json["command"]
             if command == "old_messages":
-                messages = []
                 for i in Message.objects.all():
-                    messages.append(str(i.author.username + ":\n" + i.text))
-
-                async_to_sync(self.channel_layer.group_send)(
-                    self.room_group_name, {"type": "old_messages", "message": messages}
-                )
+                    message = {
+                        "username": i.author.username,
+                        "date": i.timestamp.strftime("%Y-%m-%d %H:%M"),
+                        "message": i.text,
+                    }
+                    # тут отсылается вообще всем
+                    # async_to_sync(self.channel_layer.group_send)(
+                    #     self.room_group_name,
+                    #     {"type": "old_messages", "message": message},
+                    # )
+                    self.send(text_data=json.dumps({"message": message}))
 
     def chat_message(self, event):
         message = event["message"]

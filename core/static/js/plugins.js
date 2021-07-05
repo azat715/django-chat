@@ -21,54 +21,93 @@
   }
 }());
 
-
-const roomName = JSON.parse(document.getElementById('room-name').textContent);
-
-const chatSocket = new WebSocket(
-  'ws://'
-  + window.location.host
-  + '/ws/chat/'
-  + roomName
-  + '/'
-);
-
-chatSocket.onmessage = function (e) {
-  const data = JSON.parse(e.data);
-  console.log(data)
-  if (Array.isArray(data["message"])) {
-    console.log("Array")
-    data["message"].forEach((item) => {
-      console.log(item)
-      document.querySelector('#chat-log').value += (item + '\n');
-    })
+function showHtml(message, callback) {
+  const divMesItem = document.createElement('li');
+  divMesItem.className = 'list-group-item';
+  if (typeof callback == 'function') {
+    callback(divMesItem);
   } else {
-    console.log("not Array")
-    document.querySelector('#chat-log').value += (data.message + '\n');
+    divMesItem.innerText = message;
   }
-};
+  resFrame.appendChild(divMesItem);
+}
 
-chatSocket.onclose = function (e) {
-  console.error('Chat socket closed unexpectedly');
-};
 
-document.querySelector('#chat-message-input').focus();
-document.querySelector('#chat-message-input').onkeyup = function (e) {
-  if (e.keyCode === 13) {  // enter, return
-    document.querySelector('#chat-message-submit').click();
+function connWebSocket() {
+  const socket = new WebSocket(
+    'ws://'
+    + window.location.host
+    + '/ws/chat/test_room/'
+  );
+  socket.onopen = () => {
+    console.log('CONNECTED');
+    socket.send(
+      JSON.stringify({ 'command': 'old_messages' })
+    );
+    console.log('sendend');
+  };
+  socket.onclose = () => {
+    console.log('DISCONNECTED');
+  };
+  function send(message) {
+    if (socket.readyState == 1) {
+      socket.send(message);
+    } else {
+      console.log(socket.readyState);
+      console.log('CONNECT ERROR');
+      alert('Ошибка, смотрите логи');
+    }
   }
-};
+  function close() {
+    socket.close();
+    console.log('CLOSE');
+  }
+  socket.onmessage = (message) => {
+    showHtml(message, (divMesItem) => {
+      let data_raw = JSON.parse(message.data)
+      let data = data_raw.message
+      console.log(data)
+      const cardTitle = document.createElement('h5');
+      cardTitle.classList.add("card-title");
+      cardTitle.innerText = data.username
+      const cardSubtitle = document.createElement('h6');
+      cardSubtitle.classList.add("card-subtitle");
+      cardSubtitle.innerText = data.date
+      const cardText = document.createElement('p');
+      cardText.classList.add("card-text");
+      cardText.innerText = data.message
+      const Card = document.createElement('div');
+      Card.className = 'card';
+      const cardBody = document.createElement('div');
+      cardBody.className = 'card-body';
+      Card.appendChild(cardBody)
+      cardBody.appendChild(cardTitle)
+      cardBody.appendChild(cardSubtitle)
+      cardBody.appendChild(cardText)
+      divMesItem.appendChild(Card)
+    });
+  };
 
-document.querySelector('#chat-message-submit').onclick = function (e) {
-  const messageInputDom = document.querySelector('#chat-message-input');
-  const message = messageInputDom.value;
-  chatSocket.send(JSON.stringify({
-    'message': message
-  }));
-  messageInputDom.value = '';
-};
 
-document.querySelector('#chat-message-prev').onclick = function (e) {
-  chatSocket.send(JSON.stringify({
-    'command': 'old_messages'
-  }));
-};
+  return {
+    send: send,
+    close: close,
+  };
+}
+
+
+const btnSend = document.getElementById('chat-message-submit');
+const inputField = document.getElementById('chat-message-input');
+const resFrame = document.getElementById('chat-res');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const wsSocket = connWebSocket();
+  // wsSocket.send(JSON.stringify({ 'command': 'old_messages' }));
+  btnSend.addEventListener('click', () => {
+    // showHtml(inputField.value);
+    wsSocket.send(
+      JSON.stringify({ 'message': inputField.value })
+    );
+    inputField.value = '';
+  });
+});
